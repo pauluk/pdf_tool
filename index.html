@@ -1,0 +1,1453 @@
+
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDF & Image Toolbox - Split, Redact, Convert</title>
+
+<link rel="icon" type="image/svg+xml"
+  href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' rx='12' fill='%23005EB8'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' font-family='Arial,Helvetica,sans-serif' font-size='24' font-weight='700' fill='white'%3EPDF%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --nhs-blue:#005eb8; --nhs-dark:#003a75; --text:#1d2630; --muted:#4c6272;
+    --bg:#ffffff; --bg-alt:#f6f8f9; --tile:#ffffff;
+    --border:#d8dde0; --focus:#ffbf47; --danger:#d5281b; --success:#007f3b;
+    --r-s:10px; --r:14px; --shadow:0 1px 2px rgba(0,0,0,.05);
+  }
+  html[data-theme="dark"]{
+    --text:#e9eef3; --muted:#9bb0bf;
+    --bg:#0f1720; --bg-alt:#0b121a; --tile:#111a24;
+    --border:#213243; --nhs-dark:#0b5bb3; --shadow:0 1px 2px rgba(0,0,0,.4);
+  }
+  html,body{height:100%}
+  body{margin:0;color:var(--text);background:var(--bg);font:16px/1.55 "Segoe UI",Roboto,Arial,system-ui,sans-serif}
+  .site-header{background:var(--nhs-blue);color:#fff;box-shadow:var(--shadow)}
+  .site-header__inner{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align:items:center;gap:12px}
+  .site-logo{padding:0 10px;height:34px;display:inline-flex;align-items:center;justify-content:center;background:#fff;color:#005eb8;font-weight:800;border-radius:3px}
+  .header-spacer{flex:1}
+  .container{max-width:1200px;margin:0 auto;padding:28px 16px}
+  .lead{color:var(--muted);margin:.25rem 0 24px}
+  .card{background:var(--tile);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+  .card__content{padding:22px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:720px){.grid-2{grid-template-columns:repeat(2, minmax(0,1fr))}}
+  @media(min-width:1024px){.grid-3{grid-template-columns:repeat(3, minmax(0,1fr))}}
+  .stack{display:flex;flex-direction:column;gap:10px}
+  label{display:block;margin:0 0 6px;font-weight:600}
+  .input, input[type="file"], select {width:100%;padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-s);background:var(--bg);color:var(--text)}
+  .input:focus, input[type="file"]:focus, select:focus {outline:none;border-color:#005eb8;box-shadow:0 0 0 4px rgba(255,191,71,.45)}
+  .hint{color:var(--muted);font-size:.95rem}
+
+  .btn{appearance:none;border:0;border-radius:12px;padding:11px 14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;transition:background .15s,transform .02s}
+  .btn:active{transform:translateY(1px)}
+  .btn-primary{background:#005eb8;color:#fff}.btn-primary:hover{background:#003a75}
+  .btn-secondary{background:transparent;color:#005eb8;box-shadow:inset 0 0 0 2px #005eb8}.btn-secondary:hover{background:var(--bg-alt)}
+  .btn-ghost{background:transparent;color:#005eb8;box-shadow:inset 0 0 0 2px var(--border)} .btn-ghost:hover{background:var(--bg-alt)}
+  .btn-danger{background:transparent;color:#d5281b;box-shadow:inset 0 0 0 2px #d5281b}.btn-danger:hover{background:#fff2f2}
+  html[data-theme="dark"] .btn-secondary{color:#e6eefb;box-shadow:inset 0 0 0 2px #6fb2ff}
+  html[data-theme="dark"] .btn-ghost{color:#e6eefb}
+
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap}
+  .status{margin:20px 0;padding:14px 16px;background:var(--bg-alt);border-left:6px solid #005eb8;border-radius:10px}
+  .status.danger{border-left-color:#d5281b} .status.success{border-left-color:#007f3b}
+  .badge{display:inline-block;background:#005eb8;color:#fff;padding:.12rem .55rem;border-radius:999px;font-size:.85rem;margin:0 .25rem .25rem 0}
+
+  #downloads{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(max-width:720px){#downloads{grid-template-columns:1fr}}
+
+  .dl-item{display:flex;justify-content:space-between;align-items:center;gap:.8rem;padding:.9rem 1rem;border:1px solid var(--border);border-radius:14px;color:var(--text);background:var(--tile);box-shadow:var(--shadow)}
+  .dl-item:hover{background:var(--bg-alt)}
+  .dl-left{display:flex;align-items:center;gap:.75rem;min-width:0}
+  .dl-icon{flex:0 0 auto;width:28px;height:28px}
+  .dl-name{font-weight:700;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;max-width:100%}
+  .dl-right{display:flex;align-items:center;gap:.5rem}
+  .dl-item a.dl-link { text-decoration: none; color: inherit; display: flex; align-items: center; gap: .75rem; min-width: 0; flex-grow: 1; }
+  .pill{display:inline-block;border:1px solid var(--border);border-radius:999px;padding:.15rem .55rem;background:transparent;color:var(--muted);font-size:.85rem}
+  .note{font-size:.9rem;color:var(--muted);margin:.25rem 0 0}
+  
+  .switch { display: inline-flex; align-items: center; gap: .5rem; cursor: pointer; user-select: none; }
+  .switch .track { position: relative; width: 44px; height: 24px; border-radius: 99px; background: var(--border); transition: background .15s; }
+  .switch .thumb { position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--bg); transform: translateX(0); transition: transform .15s cubic-bezier(.18,.89,.32,1.28); }
+  .switch input { display: none; }
+  .switch input:checked + .track { background: var(--nhs-blue); }
+  .switch input:checked + .track .thumb { transform: translateX(20px); }
+  html[data-theme="dark"] .switch .track { background: var(--border); }
+  html[data-theme="dark"] .switch input:checked + .track { background: var(--nhs-blue); }
+  html[data-theme="dark"] .switch .thumb { background: var(--bg-alt); }
+  
+  html[data-theme="dark"] input,
+  html[data-theme="dark"] textarea,
+  html[data-theme="dark"] select { background: var(--bg); color: var(--text); border-color: var(--border); caret-color: var(--text); }
+  html[data-theme="dark"] input::placeholder,
+  html[data-theme="dark"] textarea::placeholder { color: var(--muted); opacity: 1; }
+  html[data-theme="dark"] input[type="file"]::-webkit-file-upload-button,
+  html[data-theme="dark"] input[type="file"]::file-selector-button {
+    background: transparent; color: var(--text); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px;
+  }
+  html[data-theme="dark"] input[type="file"]::-webkit-file-upload-button:hover,
+  html[data-theme="dark"] input[type="file"]::file-selector-button:hover { background: var(--bg-alt); }
+  html[data-theme="dark"] .dl-item { color: var(--text); }
+  html[data-theme="dark"] .pill { color: var(--muted); border-color: var(--border); }
+  
+  .split-mode-inputs { display: none; }
+  .task-options {
+    padding: 16px;
+    background: var(--bg-alt);
+    border-radius: var(--r);
+    margin-top: 16px;
+  }
+
+  .modal-backdrop {
+    position: fixed; z-index: 100;
+    inset: 0; background: rgba(0,0,0,.3);
+    opacity: 0; visibility: hidden; transition: opacity .2s, visibility .2s;
+  }
+  .modal-backdrop.show { opacity: 1; visibility: visible; }
+  .modal {
+    position: fixed; z-index: 110;
+    top: 50%; left: 50%;
+    width: 90vw; height: 90vh; max-width: 1400px;
+    background: var(--bg);
+    border-radius: var(--r);
+    box-shadow: 0 5px 20px rgba(0,0,0,.2);
+    display: flex; flex-direction: column;
+    transform: translate(-50%, -50%) scale(.95);
+    opacity: 0; visibility: hidden;
+    transition: opacity .2s, visibility .2s, transform .2s;
+  }
+  .modal-backdrop.show .modal { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+  .modal-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border);
+  }
+  .modal-title { font-size: 1.2rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .modal-close {
+    appearance: none; border: 0; background: none;
+    font-size: 2rem; font-weight: 400; line-height: 1;
+    color: var(--muted); cursor: pointer; padding: 0 4px;
+  }
+  .modal-body {
+    flex: 1; padding: 0;
+    overflow: hidden;
+  }
+  .modal-body iframe { width: 100%; height: 100%; border: 0; }
+  .modal-foot {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px; border-top: 1px solid var(--border);
+    background: var(--bg-alt);
+  }
+  html[data-theme="dark"] .modal-foot { background: var(--bg); }
+  
+  /* NEW: Image to PDF list styles */
+  #imageList {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    padding: 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-s);
+    min-height: 100px;
+    background: var(--bg);
+  }
+  .img-preview-item {
+    border: 1px solid var(--border);
+    border-radius: var(--r-s);
+    background: var(--tile);
+    box-shadow: var(--shadow);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    position: relative;
+    cursor: grab;
+  }
+  .img-preview-item:active { cursor: grabbing; }
+  .img-preview-item img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 5px;
+  }
+  .img-preview-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    text-align: center;
+  }
+  .img-preview-remove {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: var(--danger);
+    color: white;
+    border: 0;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 24px;
+  }
+  .sortable-ghost {
+    opacity: 0.4;
+    background: var(--focus);
+  }
+</style>
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="site-logo" aria-hidden="true">PDF</div>
+    <strong>PDF & Image Toolbox</strong>
+    <div class="header-spacer"></div>
+    <label class="switch" title="Toggle dark mode" style="padding: 9px 12px;">
+      <input id="darkToggle" type="checkbox">
+      <span class="track"><span class="thumb"></span></span>
+      <span style="font-weight: 700;">Dark mode</span>
+    </label>
+  </div>
+</header>
+
+<main class="container">
+  <h1 style="margin:.2rem 0 8px">PDF & Image Toolbox</h1>
+  <p class="lead">Split, compress, redact, convert, or watermark. All processing is done in your browser.</p>
+
+  <section class="card">
+    <div class="card__content">
+      
+      <div class="grid grid-2">
+        <div class="stack">
+          <label for="fileInput" id="fileInputLabel">Select PDF file(s)</label>
+          <input id="fileInput" class="input" type="file" accept="application/pdf" multiple />
+          <div class="hint" id="fileInputHint">Select one or more files to process.</div>
+        </div>
+        <div class="stack">
+          <label for="prefixInput">Filename Prefix (optional)</label>
+          <input id="prefixInput" class="input" placeholder="e.g. MyProject" />
+          <div class="hint">Used for output filenames.</div>
+        </div>
+      </div>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+
+      <div class="stack">
+        <label for="taskSelect">Select Task</label>
+        <select id="taskSelect">
+          <option value="split">Split & Compress PDF</option>
+          <option value="redact">Redact PDF</option>
+          <option value="watermark">Watermark & Number PDF</option>
+          <option value="exportText">Export Text from PDF/Image</option>
+          <option value="imagesToPdf">Convert Images to PDF</option>
+        </select>
+      </div>
+
+      <div id="taskOptionsSplit" class="task-options">
+        <h2 style="font-size: 1.2rem; margin: 0 0 12px;">Splitting Options</h2>
+        <div class="grid grid-3">
+          <div class="stack">
+            <label for="splitMode">Split Mode</label>
+            <select id="splitMode">
+              <option value="none">No Splitting (Combine/Compress Only)</option>
+              <option value="markers">Split by Text Markers</option>
+              <option value="range">Split by Page Range</option>
+              <option value="everyX">Split Every X Pages</option>
+            </select>
+          </div>
+          <div id="markerInputs" class="split-mode-inputs stack grid-2" style="grid-column: span 2;">
+            <div class="stack">
+              <label for="startText">Start marker (optional)</label>
+              <input id="startText" class="input" placeholder="e.g. Invoice #:" />
+            </div>
+            <div class="stack">
+              <label for="endText">End marker (optional)</label>
+              <input id="endText" class="input" placeholder="e.g. Page 1 of 1" />
+            </div>
+            <div class="stack" style="grid-column: span 2;">
+              <label class="hint">Match options</label>
+              <div class="btn-row" style="align-items:center">
+                <label class="switch"><input id="caseSensitive" type="checkbox"><span class="track"><span class="thumb"></span></span>Case sensitive</label>
+                <label class="switch"><input id="wholeWord" type="checkbox"><span class="track"><span class="thumb"></span></span>Whole word</label>
+              </div>
+            </div>
+          </div>
+          <div id="rangeInputs" class="split-mode-inputs stack" style="grid-column: span 2;">
+            <label for="rangeText">Page Ranges</label>
+            <input id="rangeText" class="input" placeholder="e.g. 1-5, 8, 10-12" />
+            <div class="hint">Enter ranges or single pages, separated by commas.</div>
+          </div>
+          <div id="everyXInputs" class="split-mode-inputs stack">
+            <label for="everyXPages">Pages per file</label>
+            <input id="everyXPages" class="input" type="number" value="1" min="1" />
+            <div class="hint">Creates new files, each with this many pages.</div>
+          </div>
+        </div>
+        <hr style="margin: 20px 0; border: none; border-top: 1px dashed var(--border);">
+        <h2 style="font-size: 1.2rem; margin: 16px 0 12px;">Compression Options</h2>
+        <div class="grid grid-2">
+          <div class="stack">
+            <label for="compressionLevel">Compression Level</label>
+            <select id="compressionLevel">
+              <option value="none">None (Original Quality, Searchable)</option>
+              <option value="medium">Medium (150 DPI, Image-based)</option>
+              <option value="low">Low (96 DPI, Image-based)</option>
+            </select>
+            <p class="hint">
+              <strong>Warning:</strong> Medium/Low compression converts pages to images.
+              This makes files much smaller but **removes searchable text**.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <div id="taskOptionsRedact" class="task-options" style="display:none;">
+        <h2 style="font-size: 1.2rem; margin: 0 0 12px;">Redaction Options</h2>
+        <p class="hint">Select patterns to permanently cover with black boxes. This cannot be undone.</p>
+        <div class="stack" style="gap: 12px; margin-top: 16px;">
+          <label class="switch"><input type="checkbox" class="redact-opt" id="redactEmail" checked><span class="track"><span class="thumb"></span></span>Email Addresses</label>
+          <label class="switch"><input type="checkbox" class="redact-opt" id="redactPhone" checked><span class="track"><span class="thumb"></span></span>Phone Numbers (Common formats)</label>
+          <label class="switch"><input type="checkbox" class="redact-opt" id="redactDigits8"><span class="track"><span class="thumb"></span></span>8-Digit Numbers (e.g., 12345678)</label>
+          <label class="switch"><input type="checkbox" class="redact-opt" id="redactCurrency"><span class="track"><span class="thumb"></span></span>Currency Values (e.g., £123.45, $50.00)</label>
+        </div>
+        <label for="redactCustom" style="margin-top:16px; margin-bottom:6px; font-weight: 700;">Custom Pattern (Advanced Regex)</label>
+        <input id="redactCustom" class="input" placeholder="e.g., \b\d{16}\b (leave empty if not needed)">
+      </div>
+      
+      <div id="taskOptionsWatermark" class="task-options" style="display:none;">
+        <h2 style="font-size: 1.2rem; margin: 0 0 12px;">Watermark & Page Numbers</h2>
+        <div class="grid grid-2">
+          <div class="stack">
+            <label for="watermarkText">Watermark Text (optional)</label>
+            <input id="watermarkText" class="input" placeholder="e.g. DRAFT, CONFIDENTIAL">
+          </div>
+          <div class="stack">
+            <label for="watermarkOpacity">Opacity</label>
+            <select id="watermarkOpacity">
+              <option value="0.1">10% (Subtle)</option>
+              <option value="0.25">25% (Recommended)</option>
+              <option value="0.5">50%</option>
+              <option value="1.0">100% (Opaque)</option>
+            </select>
+          </div>
+          <div class="stack">
+            <label for="pageNumberPosition">Page Numbers (optional)</label>
+            <select id="pageNumberPosition">
+              <option value="none">None</option>
+              <option value="bottom-center">Bottom Center</option>
+              <option value="bottom-right">Bottom Right</option>
+              <option value="top-center">Top Center</option>
+              <option value="top-right">Top Right</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="taskOptionsExport" class="task-options" style="display:none;">
+        <h2 style="font-size: 1.2rem; margin: 0 0 12px;">Export to Text</h2>
+        <label class="switch">
+          <input type="checkbox" id="ocrCheckbox">
+          <span class="track"><span class="thumb"></span></span>
+          <strong style="margin-left: 4px;">Run OCR on Scanned PDFs (Slow)</strong>
+        </label>
+        <p class="hint" style="margin-top: 8px;">
+          Check this if your PDF is a **scanned image** (no selectable text).
+          <br><strong>Note:</strong> Uploaded .png/.jpg images will **always** use OCR.
+        </p>
+      </div>
+
+      <div id="taskOptionsImagesToPdf" class="task-options" style="display:none;">
+        <h2 style="font-size: 1.2rem; margin: 0 0 12px;">Convert Images to PDF</h2>
+        <p class="hint">Drag and drop images to reorder them. The output will be a single PDF.</p>
+        <div id="imageList" style="margin: 16px 0;">
+          <p class="hint" style="text-align: center; grid-column: 1 / -1; align-self: center;">Uploaded images will appear here...</p>
+        </div>
+        <div class="grid grid-2">
+            <div class="stack">
+                <label for="pageSize">Page Size</label>
+                <select id="pageSize">
+                  <option value="A4">A4 (Portrait)</option>
+                  <option value="A4-Landscape">A4 (Landscape)</option>
+                  <option value="Letter">Letter (Portrait)</option>
+                  <option value="Letter-Landscape">Letter (Landscape)</option>
+                  <option value="auto">Fit to Image</option>
+                </select>
+            </div>
+            <div class="stack">
+                <label for="imageFit">Image Fit</label>
+                <select id="imageFit">
+                  <option value="contain">Scale to Fit (Maintain Aspect)</option>
+                  <option value="cover">Fill Page (Crop May Occur)</option>
+                </select>
+            </div>
+        </div>
+      </div>
+      
+      <hr style="margin: 20px 0; border: none; border-top: 1px solid var(--border);">
+      
+      <div style="display:flex;align-items:end;justify-content:flex-end; gap: 12px;">
+        <button type="button" id="btnClear" class="btn btn-danger" title="Clear inputs and results">Clear</button>
+        <button id="btnGo" class="btn btn-primary">Process Files</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="status"></div>
+
+  <section class="card" id="resultsCard" style="display:none; margin-top: 24px;">
+    <div class="card__content">
+      <h2 style="margin:0 0 12px">Results</h2>
+      <div class="btn-row" style="margin-bottom:6px">
+        <button id="btnDownloadAll" class="btn btn-ghost" style="display:none">Download all</button>
+        <button id="btnZipAll" class="btn btn-ghost" style="display:none">Download ZIP</button>
+        <button id="btnCombine" class="btn btn-ghost" style="display:none">Download Combined PDF</button>
+      </div>
+      <p class="note">If your browser blocks multiple downloads, use the ZIP option. You can also preview any PDF file.</p>
+      <div id="ranges" style="margin:12px 0"></div>
+      <div id="downloads"></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="previewModalBackdrop" class="modal-backdrop" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="previewTitle">
+    <div class="modal-head">
+      <div id="previewTitle" class="modal-title">Preview</div>
+      <button class="modal-close" id="previewCloseBtn" aria-label="Close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <iframe id="previewFrame" src="about:blank" title="PDF Preview"></iframe>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" id="btnPreviewPrev">Previous (←)</button>
+      <div style="text-align: center; font-weight: 700;" id="previewCounter"></div>
+      <button class="btn btn-secondary" id="btnPreviewNext">Next (→)</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+<script type="module">
+  import * as pdfjsLib from 'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.394/build/pdf.mjs';
+  pdfjsLib.GlobalWorkerOptions.workerSrc =
+    'https://cdn.jsdelivr.net/npm/pdfjs-dist@5.4.394/build/pdf.worker.mjs';
+  window.pdfjsLib = pdfjsLib;
+
+  /* ---------- Utils ---------- */
+  const $ = s => document.querySelector(s);
+  const now = () => new Date();
+  const isoDate = () => now().toISOString().slice(0,10);
+  const isoDateTimeSafe = () => now().toISOString().replace(/:/g,'-');
+  const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+  const showStatus = (html, kind='info') => {
+    const cls = kind==='danger'?'status danger': kind==='success'?'status success':'status';
+    $('#status').innerHTML = `<div class="${cls}"><strong>Status:</strong> ${html}</div>`;
+  };
+  const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const sanitizeName = (s) => s.replace(/[^A-Za-z0-9 ,._-]+/g,'_').replace(/\s+/g,'_').trim().replace(/_+/g,'_').slice(0,100);
+
+  /* ---------- Text/Range Helpers ---------- */
+  function normaliseTextWithEOL(items){
+    let out = '';
+    for(const it of items){
+      out += it.str || '';
+      out += it.hasEOL ? '\n' : ' ';
+    }
+    return out;
+  }
+  function escapeRe(s){ return String(s).replace(/[.*+?^${}()|[\]\\\/]/g, '\\$&'); }
+  function buildMatcher(needle,{caseSensitive=false,wholeWord=false}={}){
+    if(!needle) return null;
+    const esc = escapeRe(needle);
+    const patt = wholeWord ? `(^|[^A-Za-z0-9_])(${esc})(?=[^A-Za-z0-9_]|$)` : `(${esc})`;
+    return new RegExp(patt, caseSensitive?'g':'gi');
+  }
+  function findPagesContaining(pagesText, matcher){
+    const hits=[]; if(!matcher) return hits;
+    for(let i=0;i<pagesText.length;i++){ matcher.lastIndex=0; if(matcher.test(pagesText[i])) hits.push(i+1); }
+    return hits;
+  }
+  function computeMarkerRanges(starts, ends, totalPages){
+    if(starts.length && ends && ends.length===starts.length){
+      return starts.map((s,i)=>[s, Math.min(ends[i], totalPages)]).filter(([a,b])=>a<=b);
+    }
+    if(starts.length && (!ends || !ends.length)){
+      const ranges=[]; for(let i=0;i<starts.length;i++){ const s=starts[i]; const e=(i<starts.length-1)?(starts[i+1]-1):totalPages; if(s<=e) ranges.push([s,e]); }
+      return ranges;
+    }
+    if((!starts || !starts.length) && ends && ends.length){
+      const ranges=[]; let prevEnd=0; for(const e of ends){ const s=prevEnd+1; const endPage=Math.min(e,totalPages); if(s<=endPage) ranges.push([s,endPage]); prevEnd=endPage; }
+      if(prevEnd<totalPages) ranges.push([prevEnd+1,totalPages]); return ranges;
+    }
+    return [[1,totalPages]];
+  }
+  function parsePageRanges(rangeStr, totalPages) {
+    const ranges = [];
+    if (!rangeStr) return [];
+    const parts = rangeStr.split(',');
+    for (const part of parts) {
+      const trimmed = part.trim();
+      if (trimmed.includes('-')) {
+        const [a, b] = trimmed.split('-').map(s => parseInt(s.trim(), 10));
+        if (!isNaN(a) && !isNaN(b)) {
+          const start = Math.max(1, Math.min(a, b));
+          const end = Math.min(totalPages, Math.max(a, b));
+          if (start <= end) ranges.push([start, end]);
+        }
+      } else {
+        const page = parseInt(trimmed, 10);
+        if (!isNaN(page) && page >= 1 && page <= totalPages) {
+          ranges.push([page, page]);
+        }
+      }
+    }
+    return ranges;
+  }
+  function computeEveryXRanges(everyX, totalPages) {
+    const ranges = [];
+    if (everyX <= 0) return [[1, totalPages]];
+    for (let i = 0; i < totalPages; i += everyX) {
+      const start = i + 1;
+      const end = Math.min(i + everyX, totalPages);
+      ranges.push([start, end]);
+    }
+    return ranges;
+  }
+  
+  /* ---------- PDF Generation / Modification Helpers ---------- */
+
+  async function splitPdfVector(originalFiles, generationData){
+    const out = [];
+    const loadedDocs = {}; 
+    for(const item of generationData){
+      const [a,b] = item.range;
+      const fileIndex = item.originalFileIndex;
+      const originalName = originalFiles[fileIndex].name;
+      showStatus(`Copying pages ${a}-${b} from ${originalName} <span class="spinner"></span>`);
+      let src = loadedDocs[fileIndex];
+      if (!src) {
+        const fileData = originalFiles[fileIndex];
+        const bufForPdfLib = fileData.buffer.slice(0);
+        src = await PDFLib.PDFDocument.load(bufForPdfLib);
+        loadedDocs[fileIndex] = src;
+      }
+      const dst = await PDFLib.PDFDocument.create();
+      const idx = Array.from({length:b-a+1},(_,k)=>a-1+k);
+      const copied = await dst.copyPages(src, idx);
+      copied.forEach(p=>dst.addPage(p));
+      const bytes = await dst.save({ useObjectStreams: true });
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      out.push({ filename: item.filename, url, blob, bytes, range: item.range });
+    }
+    return out;
+  }
+  
+  async function splitPdfRaster(originalFiles, generationData, dpi, jpegQuality) {
+    const out = [];
+    const loadedDocs = {}; 
+    for(const item of generationData){
+      const [a,b] = item.range;
+      const fileIndex = item.originalFileIndex;
+      const originalName = originalFiles[fileIndex].name;
+      showStatus(`Compressing pages ${a}-${b} from ${originalName} <span class="spinner"></span>`);
+      let srcPdf = loadedDocs[fileIndex];
+      if (!srcPdf) {
+        const fileData = originalFiles[fileIndex];
+        const bufForPdfJs = fileData.buffer.slice(0);
+        const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(bufForPdfJs) });
+        srcPdf = await loadingTask.promise;
+        loadedDocs[fileIndex] = srcPdf;
+      }
+      const dstDoc = await PDFLib.PDFDocument.create();
+      const scale = dpi / 72;
+      for (let pageNum = a; pageNum <= b; pageNum++) {
+        showStatus(`Compressing file ${item.filename}, page ${pageNum} <span class="spinner"></span>`);
+        const page = await srcPdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: scale });
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        await page.render({ canvasContext: ctx, viewport }).promise;
+        const jpgDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+        const jpgImage = await dstDoc.embedJpg(jpgDataUrl);
+        const newPage = dstDoc.addPage([canvas.width, canvas.height]);
+        newPage.drawImage(jpgImage, { x: 0, y: 0, width: canvas.width, height: canvas.height });
+      }
+      const bytes = await dstDoc.save({ useObjectStreams: true });
+      const blob = new Blob([bytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      out.push({ filename: item.filename, url, blob, bytes, range: item.range });
+    }
+    return out;
+  }
+  
+  const REDACTION_PATTERNS = {
+    email: /\b[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}\b/gi,
+    phone: /\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g,
+    digits8: /\b\d{8}\b/g,
+    currency: /\b[£$€]\s*\d+(?:[.,]\d{2})?\b/g
+  };
+
+  async function findRedactionBoxes(page, patterns) {
+    const boxes = [];
+    const textContent = await page.getTextContent();
+    for (const item of textContent.items) {
+      if (!item.str) continue;
+      
+      const str = item.str;
+      for (const pattern of patterns) {
+        for (const match of str.matchAll(pattern)) {
+          const [scaleX, , , , x, y] = item.transform;
+          const fullWidth = item.width;
+          
+          const matchWidth = (match[0].length / str.length) * fullWidth * 1.05; 
+          const matchX = x + (match.index / str.length) * fullWidth;
+          
+          boxes.push({
+            x: matchX,
+            y: y - (item.height * 0.25), 
+            width: matchWidth,
+            height: item.height * 1.2, 
+          });
+        }
+      }
+    }
+    return boxes;
+  }
+  
+  /* ---------- Tesseract.js (OCR) Loader & Runner ---------- */
+  const TESSERACT_CDN = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+  let tesseractWorker = null;
+  
+  async function loadTesseract() {
+    if (window.Tesseract) return true;
+    showStatus('Loading OCR engine (Tesseract.js)... <span class="spinner"></span>');
+    try {
+      await new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = TESSERACT_CDN;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+      showStatus('OCR engine loaded. Initializing worker... <span class="spinner"></span>');
+      tesseractWorker = await Tesseract.createWorker('eng', 1, {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            const progress = (m.progress * 100).toFixed(0);
+            showStatus(`Running OCR (${m.status})... ${progress}% <span class="spinner"></span>`);
+          }
+        }
+      });
+      showStatus('OCR worker ready.', 'success');
+      return true;
+    } catch (err) {
+      console.error('Failed to load Tesseract:', err);
+      showStatus('Failed to load Tesseract.js OCR engine. Check your internet connection.', 'danger');
+      return false;
+    }
+  }
+
+  async function runOcrOnPdf(pdfjsDoc, file) {
+    if (!tesseractWorker) {
+      const loaded = await loadTesseract();
+      if (!loaded) return 'OCR failed to load.';
+    }
+    let fullText = `--- OCR TEXT FROM FILE: ${file.name} ---\n\n`;
+    const totalPages = pdfjsDoc.numPages;
+    for (let p = 1; p <= totalPages; p++) {
+      showStatus(`Running OCR on file ${file.name}, page ${p}/${totalPages}... <span class="spinner"></span>`);
+      const page = await pdfjsDoc.getPage(p);
+      const viewport = page.getViewport({ scale: 2.0 }); 
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      const { data: { text } } = await tesseractWorker.recognize(canvas);
+      fullText += `--- PAGE ${p} ---\n${text}\n\n`;
+    }
+    return fullText;
+  }
+  
+  async function runOcrOnImage(file) {
+    if (!tesseractWorker) {
+      const loaded = await loadTesseract();
+      if (!loaded) return 'OCR failed to load.';
+    }
+    showStatus(`Running OCR on image ${file.name}... <span class="spinner"></span>`);
+    const { data: { text } } = await tesseractWorker.recognize(file);
+    return `--- OCR TEXT FROM FILE: ${file.name} ---\n\n${text}`;
+  }
+
+  /* ---------- State (save/restore/clear) ---------- */
+  const LS_KEY = 'pdftoolbox_settings_v4';
+  function saveState(){
+    const state = {
+      prefix: $('#prefixInput').value || '',
+      task: $('#taskSelect').value || 'split',
+      splitMode: $('#splitMode').value || 'none',
+      start: $('#startText').value || '',
+      end: $('#endText').value || '',
+      caseSensitive: $('#caseSensitive').checked,
+      wholeWord: $('#wholeWord').checked,
+      rangeText: $('#rangeText').value || '',
+      everyXPages: $('#everyXPages').value || '1',
+      compressionLevel: $('#compressionLevel').value || 'none',
+      redactEmail: $('#redactEmail').checked,
+      redactPhone: $('#redactPhone').checked,
+      redactDigits8: $('#redactDigits8').checked,
+      redactCurrency: $('#redactCurrency').checked,
+      redactCustom: $('#redactCustom').value || '',
+      watermarkText: $('#watermarkText').value || '',
+      watermarkOpacity: $('#watermarkOpacity').value || '0.25',
+      pageNumberPosition: $('#pageNumberPosition').value || 'none',
+      ocrCheckbox: $('#ocrCheckbox').checked,
+      pageSize: $('#pageSize').value || 'A4',
+      imageFit: $('#imageFit').value || 'contain'
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }
+  function restoreState(){
+    try{
+      const raw = localStorage.getItem(LS_KEY); if(!raw) return;
+      const s = JSON.parse(raw);
+      $('#prefixInput').value = s.prefix ?? '';
+      $('#taskSelect').value = s.task ?? 'split';
+      $('#splitMode').value = s.splitMode ?? 'none';
+      $('#startText').value = s.start ?? '';
+      $('#endText').value = s.end ?? '';
+      $('#caseSensitive').checked = !!s.caseSensitive;
+      $('#wholeWord').checked = !!s.wholeWord;
+      $('#rangeText').value = s.rangeText ?? '';
+      $('#everyXPages').value = s.everyXPages ?? '1';
+      $('#compressionLevel').value = s.compressionLevel ?? 'none';
+      $('#redactEmail').checked = s.redactEmail !== false; 
+      $('#redactPhone').checked = s.redactPhone !== false; 
+      $('#redactDigits8').checked = !!s.redactDigits8;
+      $('#redactCurrency').checked = !!s.redactCurrency;
+      $('#redactCustom').value = s.redactCustom ?? '';
+      $('#watermarkText').value = s.watermarkText ?? '';
+      $('#watermarkOpacity').value = s.watermarkOpacity ?? '0.25';
+      $('#pageNumberPosition').value = s.pageNumberPosition ?? 'none';
+      $('#ocrCheckbox').checked = !!s.ocrCheckbox;
+      $('#pageSize').value = s.pageSize ?? 'A4';
+      $('#imageFit').value = s.imageFit ?? 'contain';
+      
+      handleTaskChange();
+      updateSplitModeUI();
+      showStatus(`Restored saved settings.`, 'success');
+    }catch{}
+  }
+  function clearState(){ localStorage.removeItem(LS_KEY); }
+
+  /* ---------- UI refs and Listeners ---------- */
+  const elBtnGo = $('#btnGo');
+  const elBtnClear = $('#btnClear');
+  const elSplitMode = $('#splitMode');
+  const elTaskSelect = $('#taskSelect');
+  const elFileInput = $('#fileInput');
+  const elFileInputLabel = $('#fileInputLabel');
+  const elFileInputHint = $('#fileInputHint');
+  const btnAll = $('#btnDownloadAll');
+  const btnZip = $('#btnZipAll');
+  const btnCombine = $('#btnCombine');
+
+  restoreState();
+  
+  const allInputs = [
+    'prefixInput', 'taskSelect', 'splitMode', 'startText', 'endText', 'caseSensitive', 
+    'wholeWord', 'rangeText', 'everyXPages', 'compressionLevel',
+    'redactEmail', 'redactPhone', 'redactDigits8', 'redactCurrency', 'redactCustom',
+    'watermarkText', 'watermarkOpacity', 'pageNumberPosition', 'ocrCheckbox',
+    'pageSize', 'imageFit'
+  ];
+  allInputs.forEach(id => {
+    const el = $('#' + id);
+    if (el) {
+      el.addEventListener('input', saveState);
+      el.addEventListener('change', saveState);
+    }
+  });
+
+  function updateSplitModeUI() {
+    const mode = elSplitMode.value;
+    $('#markerInputs').style.display = (mode === 'markers') ? 'grid' : 'none';
+    $('#rangeInputs').style.display = (mode === 'range') ? 'block' : 'none';
+    $('#everyXInputs').style.display = (mode === 'everyX') ? 'block' : 'none';
+  }
+  elSplitMode.addEventListener('change', updateSplitModeUI);
+
+  // NEW: Update file input based on task
+  function handleTaskChange() {
+    const task = elTaskSelect.value;
+    $('#taskOptionsSplit').style.display = (task === 'split') ? 'block' : 'none';
+    $('#taskOptionsRedact').style.display = (task === 'redact') ? 'block' : 'none';
+    $('#taskOptionsWatermark').style.display = (task === 'watermark') ? 'block' : 'none';
+    $('#taskOptionsExport').style.display = (task === 'exportText') ? 'block' : 'none';
+    $('#taskOptionsImagesToPdf').style.display = (task === 'imagesToPdf') ? 'block' : 'none';
+    
+    // Clear the file input when changing tasks to avoid conflicts
+    elFileInput.value = '';
+    
+    if (task === 'exportText') {
+      elFileInputLabel.textContent = 'Select PDF or Image file(s)';
+      elFileInput.accept = 'application/pdf,image/png,image/jpeg';
+      elFileInputHint.textContent = 'Select .pdf, .png, or .jpg files.';
+    } else if (task === 'imagesToPdf') {
+      elFileInputLabel.textContent = 'Select Image file(s)';
+      elFileInput.accept = 'image/png,image/jpeg';
+      elFileInputHint.textContent = 'Select .png or .jpg files to add them to the list below.';
+    } else {
+      elFileInputLabel.textContent = 'Select PDF file(s)';
+      elFileInput.accept = 'application/pdf';
+      elFileInputHint.textContent = 'Select one or more .pdf files.';
+    }
+  }
+  elTaskSelect.addEventListener('change', handleTaskChange);
+  
+  handleTaskChange();
+  updateSplitModeUI();
+
+  // NEW: Image to PDF list logic
+  let imageFiles = []; // This will store the File objects in order
+  const imageList = $('#imageList');
+  if (window.Sortable) {
+    new Sortable(imageList, {
+      animation: 150,
+      ghostClass: 'sortable-ghost',
+      onEnd: (evt) => {
+        // Reorder the imageFiles array based on the new DOM order
+        const newArray = [];
+        imageList.querySelectorAll('.img-preview-item').forEach(item => {
+          const id = item.dataset.id;
+          newArray.push(imageFiles.find(f => f.id === id));
+        });
+        imageFiles = newArray;
+      }
+    });
+  }
+
+  function renderImageList() {
+    if (imageFiles.length === 0) {
+      imageList.innerHTML = '<p class="hint" style="text-align: center; grid-column: 1 / -1; align-self: center;">Uploaded images will appear here...</p>';
+      return;
+    }
+    imageList.innerHTML = '';
+    imageFiles.forEach(file => {
+      const item = document.createElement('div');
+      item.className = 'img-preview-item';
+      item.dataset.id = file.id;
+      item.innerHTML = `
+        <img src="${file.url}" alt="${escapeHtml(file.name)}">
+        <span class="img-preview-name">${escapeHtml(file.name)}</span>
+        <button class="img-preview-remove" data-id="${file.id}" title="Remove">&times;</button>
+      `;
+      imageList.appendChild(item);
+    });
+  }
+
+  elFileInput.addEventListener('change', () => {
+    const task = elTaskSelect.value;
+    if (task !== 'imagesToPdf') return;
+    
+    if (imageFiles.length === 0) imageList.innerHTML = ''; // Clear placeholder
+    
+    for (const file of elFileInput.files) {
+      if (!file.type.startsWith('image/')) continue;
+      const fileWithId = {
+        id: `img-${Date.now()}-${Math.random()}`,
+        file: file,
+        name: file.name,
+        url: URL.createObjectURL(file)
+      };
+      imageFiles.push(fileWithId);
+    }
+    renderImageList();
+    elFileInput.value = ''; // Clear input so user can add more
+  });
+
+  imageList.addEventListener('click', (e) => {
+    if (e.target.classList.contains('img-preview-remove')) {
+      const id = e.target.dataset.id;
+      const file = imageFiles.find(f => f.id === id);
+      if (file) URL.revokeObjectURL(file.url); // Revoke URL to free memory
+      imageFiles = imageFiles.filter(f => f.id !== id);
+      renderImageList();
+    }
+  });
+
+  elBtnClear.addEventListener('click', ()=>{
+    for (const a of document.querySelectorAll('#downloads a')) { try { URL.revokeObjectURL(a.href); } catch {} }
+    imageFiles.forEach(f => URL.revokeObjectURL(f.url));
+    imageFiles = [];
+    renderImageList();
+    
+    elFileInput.value=''; 
+    $('#prefixInput').value='';
+    $('#taskSelect').value='split';
+    $('#splitMode').value='none';
+    $('#startText').value=''; $('#endText').value='';
+    $('#caseSensitive').checked=false; $('#wholeWord').checked=false;
+    $('#rangeText').value='';
+    $('#everyXPages').value='1';
+    $('#compressionLevel').value='none';
+    $('#redactEmail').checked = true;
+    $('#redactPhone').checked = true;
+    $('#redactDigits8').checked = false;
+    $('#redactCurrency').checked = false;
+    $('#redactCustom').value = '';
+    $('#watermarkText').value = '';
+    $('#watermarkOpacity').value = '0.25';
+    $('#pageNumberPosition').value = 'none';
+    $('#ocrCheckbox').checked = false;
+    $('#pageSize').value = 'A4';
+    $('#imageFit').value = 'contain';
+    
+    $('#downloads').innerHTML=''; $('#ranges').innerHTML='';
+    $('#resultsCard').style.display='none';
+    btnAll.style.display='none'; btnZip.style.display='none'; btnCombine.style.display='none'; 
+    showStatus('Cleared inputs and results.','success');
+    clearState();
+    handleTaskChange();
+    updateSplitModeUI();
+    window.currentLinks = null;
+  });
+
+  /* ---------- Go (Main Logic) ---------- */
+  elBtnGo.addEventListener('click', async ()=>{
+    const downloads = $('#downloads');
+    const rangesBox = $('#ranges');
+    downloads.innerHTML=''; rangesBox.innerHTML='';
+    $('#resultsCard').style.display='none';
+    btnAll.style.display='none'; btnZip.style.display='none'; btnCombine.style.display='none';
+    window.currentLinks = null;
+
+    if(!pdfjsLib || !pdfjsLib.getDocument){
+      showStatus('pdf.js is not available. Please check your internet connection and refresh.','danger'); return;
+    }
+    
+    const task = $('#taskSelect').value;
+    // Use files from image list if in that mode, otherwise use file input
+    const files = (task === 'imagesToPdf') ? imageFiles.map(f => f.file) : elFileInput.files;
+    
+    if(!files || files.length === 0){ 
+      showStatus('Please choose one or more files to process.','danger'); return; 
+    }
+
+    const t0 = performance.now();
+    const prefix = ($('#prefixInput').value || 'File').trim();
+    let links = []; 
+    
+    try {
+      // ========================================================
+      //  TASK 1: SPLIT & COMPRESS
+      // ========================================================
+      if (task === 'split') {
+        const splitMode = $('#splitMode').value;
+        const compressionLevel = $('#compressionLevel').value;
+        const startNeedle = ($('#startText').value || '').trim();
+        const endNeedle = ($('#endText').value || '').trim();
+        const markerOpts = { caseSensitive: $('#caseSensitive').checked, wholeWord: $('#wholeWord').checked };
+        const rangeText = ($('#rangeText').value || '').trim();
+        const everyXPages = parseInt($('#everyXPages').value, 10) || 1;
+        const generationData = [];
+        const allFileBuffers = [];
+        let allRangesHtml = '';
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          showStatus(`Loading file ${i + 1}/${files.length}: ${escapeHtml(file.name)}... <span class="spinner"></span>`);
+          const buf = await file.arrayBuffer();
+          allFileBuffers.push({ name: file.name, buffer: buf });
+          const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) });
+          const pdf = await loadingTask.promise;
+          const totalPages = pdf.numPages;
+          let ranges = [];
+          if (splitMode === 'none') {
+            ranges = [[1, totalPages]];
+            allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (1 doc, pages 1-${totalPages}):</strong> <span class="badge">1-${totalPages}</span></div>`;
+          } else if (splitMode === 'markers') {
+            const pagesText = [];
+            for(let p=1; p<=totalPages; p++) {
+              showStatus(`Reading file ${i+1}/${files.length} for markers, page ${p}/${totalPages} <span class="spinner"></span>`);
+              const page = await pdf.getPage(p);
+              const tc = await page.getTextContent();
+              pagesText.push(normaliseTextWithEOL(tc.items));
+            }
+            const starts = startNeedle ? findPagesContaining(pagesText, buildMatcher(startNeedle, markerOpts)) : [];
+            const ends = endNeedle ? findPagesContaining(pagesText, buildMatcher(endNeedle, markerOpts)) : [];
+            if (!starts.length && !ends.length) {
+              allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (No markers found, 1 doc):</strong> <span class="badge">1-${totalPages}</span></div>`;
+              ranges = [[1, totalPages]];
+            } else {
+              ranges = computeMarkerRanges(starts, ends, totalPages);
+              allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (${ranges.length} range(s)):</strong> ${ranges.map(r=>`<span class="badge">${r[0]}-${r[1]}</span>`).join(' ')}</div>`;
+            }
+          } else if (splitMode === 'range') {
+            ranges = parsePageRanges(rangeText, totalPages);
+            if (!ranges.length) {
+               allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (No valid ranges, 1 doc):</strong> <span class="badge">1-${totalPages}</span></div>`;
+               ranges = [[1, totalPages]];
+            } else {
+               allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (${ranges.length} range(s)):</strong> ${ranges.map(r=>`<span class="badge">${r[0]}-${r[1]}</span>`).join(' ')}</div>`;
+            }
+          } else if (splitMode === 'everyX') {
+             ranges = computeEveryXRanges(everyXPages, totalPages);
+             allRangesHtml += `<div><strong>File: ${escapeHtml(file.name)} (${ranges.length} file(s)):</strong> ${ranges.map(r=>`<span class="badge">${r[0]}-${r[1]}</span>`).join(' ')}</div>`;
+          }
+          const baseFilename = file.name.endsWith('.pdf') ? file.name.slice(0, -4) : file.name;
+          ranges.forEach((range, j) => {
+            const filename = (ranges.length > 1 || files.length > 1)
+              ? `${prefix}_${baseFilename}_${range[0]}-${range[1]}.pdf`
+              : `${prefix}_${baseFilename}.pdf`;
+            generationData.push({ range, filename: sanitizeName(filename), originalFileIndex: i });
+          });
+        } 
+        if (generationData.length === 0) {
+          showStatus('No documents were found or created. Check your settings.', 'danger'); return;
+        }
+        rangesBox.innerHTML = allRangesHtml;
+        if (compressionLevel === 'none') {
+          showStatus('Generating high-quality PDFs... <span class="spinner"></span>');
+          links = await splitPdfVector(allFileBuffers, generationData);
+        } else {
+          const dpi = (compressionLevel === 'medium') ? 150 : 96;
+          const quality = (compressionLevel === 'medium') ? 0.75 : 0.6;
+          showStatus('Generating compressed (image-based) PDFs... <span class="spinner"></span>');
+          links = await splitPdfRaster(allFileBuffers, generationData, dpi, quality);
+        }
+
+      // ========================================================
+      //  TASK 2: REDACT DATA
+      // ========================================================
+      } else if (task === 'redact') {
+        const patterns = [];
+        if ($('#redactEmail').checked) patterns.push(REDACTION_PATTERNS.email);
+        if ($('#redactPhone').checked) patterns.push(REDACTION_PATTERNS.phone);
+        if ($('#redactDigits8').checked) patterns.push(REDACTION_PATTERNS.digits8);
+        if ($('#redactCurrency').checked) patterns.push(REDACTION_PATTERNS.currency);
+        const customPattern = $('#redactCustom').value.trim();
+        if (customPattern) {
+          try {
+            patterns.push(new RegExp(customPattern, 'g'));
+          } catch (e) {
+            showStatus(`Invalid Custom Regex: ${escapeHtml(e.message)}`, 'danger');
+            return;
+          }
+        }
+        if (patterns.length === 0) {
+          showStatus('Please select at least one pattern to redact.', 'danger');
+          return;
+        }
+        rangesBox.innerHTML = `<div><strong>Redacting ${patterns.length} pattern(s)</strong> across ${files.length} file(s).</div>`;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const baseFilename = file.name.endsWith('.pdf') ? file.name.slice(0, -4) : file.name;
+          const outFilename = sanitizeName(`${prefix}_${baseFilename}_REDACTED.pdf`);
+          showStatus(`Loading file ${i + 1}/${files.length} for redaction... <span class="spinner"></span>`);
+          const buf = await file.arrayBuffer();
+          const doc = await PDFLib.PDFDocument.load(buf);
+          const pdfjsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) }).promise;
+          let totalBoxes = 0;
+          for (let p = 0; p < doc.getPageCount(); p++) {
+            showStatus(`Redacting file ${i + 1}, page ${p + 1}/${doc.getPageCount()}... <span class="spinner"></span>`);
+            const page = doc.getPage(p);
+            const pdfjsPage = await pdfjsDoc.getPage(p + 1);
+            const boxes = await findRedactionBoxes(pdfjsPage, patterns);
+            totalBoxes += boxes.length;
+            for (const box of boxes) {
+              page.drawRectangle({
+                x: box.x, y: box.y, width: box.width, height: box.height,
+                color: PDFLib.rgb(0, 0, 0),
+              });
+            }
+          }
+          showStatus(`Saving redacted file ${i + 1}... <span class="spinner"></span>`);
+          const bytes = await doc.save();
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          links.push({ filename: outFilename, url, blob, bytes, range: [1, doc.getPageCount()] });
+          rangesBox.innerHTML += `<div><strong>File: ${escapeHtml(file.name)}:</strong> <span class="badge success">${totalBoxes} redaction(s) applied</span></div>`;
+        }
+      
+      // ========================================================
+      //  TASK 3: WATERMARK & PAGE NUMBERS
+      // ========================================================
+      } else if (task === 'watermark') {
+        const watermarkText = $('#watermarkText').value.trim();
+        const watermarkOpacity = parseFloat($('#watermarkOpacity').value) || 0.25;
+        const pageNumPos = $('#pageNumberPosition').value;
+        if (!watermarkText && pageNumPos === 'none') {
+          showStatus('Please enter watermark text or select a page number position.', 'danger');
+          return;
+        }
+        rangesBox.innerHTML = `<div><strong>Applying additions</strong> to ${files.length} file(s).</div>`;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const baseFilename = file.name.endsWith('.pdf') ? file.name.slice(0, -4) : file.name;
+          const outFilename = sanitizeName(`${prefix}_${baseFilename}_MODIFIED.pdf`);
+          showStatus(`Loading file ${i + 1}/${files.length} for watermarking... <span class="spinner"></span>`);
+          const buf = await file.arrayBuffer();
+          const doc = await PDFLib.PDFDocument.load(buf);
+          const font = await doc.embedFont(PDFLib.StandardFonts.Helvetica);
+          const pages = doc.getPages();
+          for (let p = 0; p < pages.length; p++) {
+            showStatus(`Processing file ${i + 1}, page ${p + 1}/${pages.length}... <span class="spinner"></span>`);
+            const page = pages[p];
+            const { width, height } = page.getSize();
+            if (watermarkText) {
+              const fontSize = Math.min(width, height) / 10;
+              const textWidth = font.widthOfTextAtSize(watermarkText, fontSize);
+              page.drawText(watermarkText, {
+                x: (width - textWidth) / 2, y: height / 2, size: fontSize, font: font,
+                color: PDFLib.rgb(0, 0, 0), opacity: watermarkOpacity, rotate: PDFLib.degrees(45),
+              });
+            }
+            if (pageNumPos !== 'none') {
+              const pageText = `Page ${p + 1} of ${pages.length}`;
+              const pageTextWidth = font.widthOfTextAtSize(pageText, 12);
+              let x, y;
+              if (pageNumPos === 'bottom-center') { x = (width - pageTextWidth) / 2; y = 30; } 
+              else if (pageNumPos === 'bottom-right') { x = width - pageTextWidth - 30; y = 30; }
+              else if (pageNumPos === 'top-center') { x = (width - pageTextWidth) / 2; y = height - 40; }
+              else if (pageNumPos === 'top-right') { x = width - pageTextWidth - 30; y = height - 40; }
+              page.drawText(pageText, { x, y, size: 12, font, color: PDFLib.rgb(0, 0, 0) });
+            }
+          }
+          showStatus(`Saving modified file ${i + 1}... <span class="spinner"></span>`);
+          const bytes = await doc.save();
+          const blob = new Blob([bytes], { type: 'application/pdf' });
+          const url = URL.createObjectURL(blob);
+          links.push({ filename: outFilename, url, blob, bytes, range: [1, doc.getPageCount()] });
+        }
+        
+      // ========================================================
+      //  TASK 4: EXPORT TO TEXT (with OCR)
+      // ========================================================
+      } else if (task === 'exportText') {
+        const useOcrPdf = $('#ocrCheckbox').checked;
+        if (useOcrPdf || Array.from(files).some(f => f.type.startsWith('image/'))) {
+          const loaded = await loadTesseract();
+          if (!loaded) throw new Error('OCR engine failed to load.');
+        }
+        rangesBox.innerHTML = `<div><strong>Extracting text</strong> from ${files.length} file(s).</div>`;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const baseFilename = file.name.split('.').slice(0, -1).join('.');
+          const outFilename = sanitizeName(`${prefix}_${baseFilename}.txt`);
+          let fullText = '';
+          
+          if (file.type.startsWith('image/')) {
+            // It's an image, always use OCR
+            fullText = await runOcrOnImage(file);
+          } else if (file.type === 'application/pdf') {
+            // It's a PDF
+            const buf = await file.arrayBuffer();
+            const pdfjsDoc = await pdfjsLib.getDocument({ data: new Uint8Array(buf.slice(0)) }).promise;
+            if (useOcrPdf) {
+              fullText = await runOcrOnPdf(pdfjsDoc, file);
+            } else {
+              fullText = `--- TEXT FROM FILE: ${file.name} ---\n\n`;
+              for (let p = 0; p < pdfjsDoc.numPages; p++) {
+                showStatus(`Exporting text from PDF ${i + 1}, page ${p + 1}/${pdfjsDoc.numPages}... <span class="spinner"></span>`);
+                const page = await pdfjsDoc.getPage(p + 1);
+                const tc = await page.getTextContent();
+                fullText += `--- PAGE ${p + 1} ---\n${normaliseTextWithEOL(tc.items)}\n\n`;
+              }
+            }
+          }
+          const blob = new Blob([fullText], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          links.push({ filename: outFilename, url, blob, bytes: null, range: [1, 1] });
+        }
+      
+      // ========================================================
+      //  NEW TASK 5: IMAGES TO PDF
+      // ========================================================
+      } else if (task === 'imagesToPdf') {
+        const pageSize = $('#pageSize').value;
+        const imageFit = $('#imageFit').value;
+        rangesBox.innerHTML = `<div><strong>Converting ${files.length} images</strong> into one PDF.</div>`;
+        
+        const doc = await PDFLib.PDFDocument.create();
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          showStatus(`Adding image ${i + 1}/${files.length}: ${escapeHtml(file.name)}... <span class="spinner"></span>`);
+          
+          const buf = await file.arrayBuffer();
+          const image = file.type === 'image/png'
+            ? await doc.embedPng(buf)
+            : await doc.embedJpg(buf);
+          
+          let page;
+          if (pageSize === 'auto') {
+            page = doc.addPage([image.width, image.height]);
+          } else {
+            let [width, height] = (pageSize === 'A4' || pageSize === 'A4-Landscape') ? [PDFLib.PageSizes.A4[0], PDFLib.PageSizes.A4[1]] : [PDFLib.PageSizes.Letter[0], PDFLib.PageSizes.Letter[1]];
+            if (pageSize.endsWith('-Landscape')) [width, height] = [height, width];
+            page = doc.addPage([width, height]);
+          }
+          
+          const { width: pageWidth, height: pageHeight } = page.getSize();
+          let dims;
+          if (imageFit === 'contain') {
+            dims = image.scaleToFit(pageWidth - 50, pageHeight - 50); // 25pt margin
+          } else { // cover
+            dims = image.scaleToCover(pageWidth, pageHeight);
+          }
+          
+          page.drawImage(image, {
+            x: (pageWidth - dims.width) / 2,
+            y: (pageHeight - dims.height) / 2,
+            width: dims.width,
+            height: dims.height,
+          });
+        }
+        
+        showStatus('Saving new PDF... <span class="spinner"></span>');
+        const outFilename = sanitizeName(`${prefix}_Combined_Images.pdf`);
+        const bytes = await doc.save();
+        const blob = new Blob([bytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        links.push({ filename: outFilename, url, blob, bytes, range: [1, doc.getPageCount()] });
+      }
+      
+      // ========================================================
+      //  FINAL: DISPLAY RESULTS
+      // ========================================================
+      window.currentLinks = links; 
+      
+      for(let i = 0; i < links.length; i++){
+        const { filename, url, range } = links[i];
+        const isText = filename.endsWith('.txt');
+        const iconPath = isText
+          ? "M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.1.9-2 2-2Z"
+          : "M6 2h7l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4c0-1.1.9-2 2-2Z";
+        const iconFill = isText ? "#4c6272" : "#005eb8";
+        
+        const dlItem = document.createElement('div');
+        dlItem.className = 'dl-item';
+        dlItem.innerHTML = `
+          <a href="${url}" download="${filename}" class="dl-link" title="Click to download ${escapeHtml(filename)}">
+            <svg class="dl-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="${iconFill}" d="${iconPath}"/>
+              ${isText 
+                ? '<path fill="#fff" d="M13 2v5h5"/><rect x="7" y="12" width="10" height="1.6" rx=".8" fill="#fff"/><rect x="7" y="15" width="10" height="1.6" rx=".8" fill="#fff"/>'
+                : '<path fill="#fff" d="M13 2v5h5"/><path fill="#fff" d="M8.5 12h7v1.5h-7zM8.5 15h7v1.5h-7z"/>'
+              }
+            </svg>
+            <span class="dl-name">${escapeHtml(filename)}</span>
+          </a>
+          <span class="dl-right">
+            ${task !== 'exportText' ? `<span class="pill">pages ${escapeHtml(range.join('-'))}</span>` : ''}
+            ${!isText ? `<button class="btn btn-secondary btn-preview" data-index="${i}" style="padding: 4px 8px; border-radius: 8px; font-size: .85rem;">Preview</button>` : ''}
+          </span>`;
+        downloads.appendChild(dlItem);
+      }
+
+      btnAll.style.display=''; 
+      btnZip.style.display='';
+      const pdfLinks = links.filter(l => l.filename.endsWith('.pdf'));
+      if (task === 'split' && pdfLinks.length > 1) {
+        btnCombine.style.display='';
+      }
+      
+      $('#resultsCard').style.display='';
+      const t1 = performance.now();
+      showStatus(`Done. Generated <strong>${links.length}</strong> file(s) in ${(t1 - t0 | 0)} ms.`, 'success');
+
+      // Open preview modal for the first PDF
+      const firstPdfIndex = links.findIndex(l => !l.filename.endsWith('.txt'));
+      if (firstPdfIndex > -1) {
+        openPreviewModal(firstPdfIndex);
+      }
+    
+    } catch(err) {
+      console.error(err);
+      showStatus('Something went wrong. See console for details.', 'danger');
+    }
+  });
+
+  /* ---------- Result Button Handlers ---------- */
+  async function downloadBlobAs(filename, blob) {
+    const url = URL.createObjectURL(blob);
+    try {
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); await sleep(120); a.remove();
+    } finally { URL.revokeObjectURL(url); }
+  }
+
+  btnAll.onclick = async () => {
+    const links = window.currentLinks || [];
+    try {
+      let count = 0;
+      for (const { filename, blob } of links) {  
+        await downloadBlobAs(filename, blob);
+        if (++count % 5 === 0) await sleep(350);
+      }
+    } catch (e) {
+      console.error(e);
+      showStatus('Multiple downloads appear to be blocked. Use “Download ZIP” or allow Automatic downloads.', 'danger');
+    }
+  };
+  
+  btnZip.onclick = async () => {
+    const links = window.currentLinks || [];
+    if (!links.length) return;
+    try {
+      const zip = new JSZip();
+      for (const { filename, blob } of links) zip.file(filename, blob);  
+      const zipBlob = await zip.generateAsync({ type: 'blob' });
+      const prefix = ($('#prefixInput').value || 'Files').trim();
+      const zipName = `${prefix}_${isoDateTimeSafe()}.zip`;  
+      saveAs(zipBlob, zipName);
+    } catch (e) {
+      console.error(e);
+      showStatus('Could not build ZIP. See console for details.', 'danger');
+    }
+  };
+  
+  btnCombine.onclick = async () => {
+    const links = window.currentLinks || [];
+    const pdfLinks = links.filter(l => l.filename.endsWith('.pdf') && l.bytes);
+    if (pdfLinks.length <= 1) {
+      showStatus('Combine requires more than one PDF file from a "Split" task.', 'info');
+      return;
+    }
+    const t_start = performance.now();
+    showStatus('Creating new combined PDF... <span class="spinner"></span>');
+    try {
+      const combinedDoc = await PDFLib.PDFDocument.create();
+      for (let i = 0; i < pdfLinks.length; i++) {
+        const { filename, bytes } = pdfLinks[i];
+        showStatus(`Combining file ${i + 1}/${pdfLinks.length} (${escapeHtml(filename)})... <span class="spinner"></span>`);
+        const srcDoc = await PDFLib.PDFDocument.load(bytes);
+        const indices = srcDoc.getPageIndices();
+        const copiedPages = await combinedDoc.copyPages(srcDoc, indices);
+        copiedPages.forEach((page) => combinedDoc.addPage(page));
+      }
+      showStatus('Saving combined PDF... <span class="spinner"></span>');
+      const combinedBytes = await combinedDoc.save({ useObjectStreams: true });
+      const blob = new Blob([combinedBytes], { type: 'application/pdf' });
+      const prefix = ($('#prefixInput').value || 'Combined').trim();
+      const name = `${prefix}_${isoDate()}_COMBINED.pdf`;
+      saveAs(blob, name);
+      const t_end = performance.now();
+      showStatus(`Successfully combined ${pdfLinks.length} files into one PDF in ${(t_end - t_start | 0)} ms.`, 'success');
+    } catch (err) {
+      console.error(err);
+      showStatus('Error combining PDFs. See console for details.', 'danger');
+    }
+  };
+
+  /* ---------- Preview Modal Logic ---------- */
+  const previewBackdrop = $('#previewModalBackdrop');
+  const previewCloseBtn = $('#previewCloseBtn');
+  const btnPreviewPrev = $('#btnPreviewPrev');
+  const btnPreviewNext = $('#btnPreviewNext');
+  const previewFrame = $('#previewFrame');
+  const previewTitle = $('#previewTitle');
+  const previewCounter = $('#previewCounter');
+  let currentPreviewIndex = 0;
+  let currentPreviewableLinks = [];
+
+  function openPreviewModal(index) {
+    currentPreviewableLinks = (window.currentLinks || []).filter(l => !l.filename.endsWith('.txt'));
+    if (currentPreviewableLinks.length === 0) return;
+    currentPreviewIndex = index;
+    previewBackdrop.classList.add('show');
+    previewBackdrop.removeAttribute('aria-hidden');
+    document.body.style.overflow = 'hidden';
+    loadPreviewForIndex(index);
+  }
+
+  function closePreviewModal() {
+    previewBackdrop.classList.remove('show');
+    previewBackdrop.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    previewFrame.src = 'about:blank'; 
+  }
+
+  function loadPreviewForIndex(index) {
+    const link = currentPreviewableLinks[index];
+    if (!link) return;
+    previewFrame.src = link.url;
+    previewTitle.textContent = link.filename;
+    previewCounter.textContent = `${index + 1} of ${currentPreviewableLinks.length}`;
+    currentPreviewIndex = index;
+  }
+  
+  function changePreview(delta) {
+    const total = currentPreviewableLinks.length;
+    if (total === 0) return;
+    let newIndex = currentPreviewIndex + delta;
+    if (newIndex < 0) newIndex = total - 1;
+    if (newIndex >= total) newIndex = 0;
+    loadPreviewForIndex(newIndex);
+  }
+
+  $('#downloads').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-preview');
+    if (btn) {
+      const index = parseInt(btn.dataset.index, 10);
+      const link = (window.currentLinks || [])[index];
+      if (link) {
+        const previewableIndex = (window.currentLinks || [])
+          .filter(l => !l.filename.endsWith('.txt'))
+          .findIndex(l => l.url === link.url);
+        if (previewableIndex > -1) {
+          openPreviewModal(previewableIndex);
+        }
+      }
+    }
+  });
+
+  previewCloseBtn.addEventListener('click', closePreviewModal);
+  previewBackdrop.addEventListener('click', (e) => {
+    if (e.target === previewBackdrop) closePreviewModal();
+  });
+  btnPreviewPrev.addEventListener('click', () => changePreview(-1));
+  btnPreviewNext.addEventListener('click', () => changePreview(1));
+  window.addEventListener('keydown', (e) => {
+    if (previewBackdrop.classList.contains('show')) {
+      if (e.key === 'Escape') closePreviewModal();
+      if (e.key === 'ArrowLeft') changePreview(-1);
+      if (e.key === 'ArrowRight') changePreview(1);
+    }
+  });
+
+  /* ---------- Dark mode ---------- */
+  const THEME_KEY = 'pdftoolbox_theme';
+  const themeToggle = document.getElementById('darkToggle');
+  function applyTheme(theme){
+    document.documentElement.setAttribute('data-theme', theme);
+    themeToggle.checked = (theme === 'dark');
+  }
+  (function initTheme(){
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved === 'light' || saved === 'dark'){ applyTheme(saved); return; }
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(prefersDark ? 'dark' : 'light');
+  })();
+  themeToggle.addEventListener('change', ()=>{
+    const theme = themeToggle.checked ? 'dark' : 'light';
+    applyTheme(theme);
+    localStorage.setItem(THEME_KEY, theme);
+  });
+</script>
+
+</body>
+</html>
